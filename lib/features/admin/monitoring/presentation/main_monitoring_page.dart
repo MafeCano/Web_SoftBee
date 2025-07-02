@@ -47,34 +47,52 @@ class _MainMonitoringScreenState extends State<MainMonitoringScreen>
     try {
       final user = await EnhancedApiService.obtenerPerfil();
       if (user != null) {
-        final results = await Future.wait([
-          EnhancedApiService.obtenerEstadisticas(),
-          EnhancedApiService.obtenerApiarios(userId: user.id),
-        ]);
+        final fetchedApiarios =
+            await EnhancedApiService.obtenerApiarios(userId: user.id);
+
+        int totalColmenas = 0;
+        if (fetchedApiarios.isNotEmpty) {
+          // Usamos Future.wait para obtener todas las colmenas en paralelo
+          final List<List<Colmena>> allColmenas = await Future.wait(
+              fetchedApiarios.map(
+                  (apiario) => EnhancedApiService.obtenerColmenas(apiario.id)));
+          // Sumamos el total de colmenas
+          totalColmenas = allColmenas.fold(0, (sum, list) => sum + list.length);
+        }
+
+        // Mantenemos la obtención de otras estadísticas
+        final otherStats = await EnhancedApiService.obtenerEstadisticas();
+
         if (mounted) {
           setState(() {
-            estadisticas = results[0] as Map<String, dynamic>;
-            apiarios = results[1] as List<Apiario>;
+            apiarios = fetchedApiarios;
+            estadisticas = {
+              'total_apiarios': fetchedApiarios.length,
+              'total_colmenas': totalColmenas,
+              'total_monitoreos': otherStats['total_monitoreos'] ?? 0,
+              'monitoreos_pendientes':
+                  otherStats['monitoreos_pendientes'] ?? 0,
+            };
           });
         }
       } else {
-        // Handle user not authenticated
+        // Manejar el caso de usuario no autenticado
+        // Podrías redirigir al login o mostrar un mensaje
       }
     } catch (e) {
       debugPrint("❌ Error al cargar datos: $e");
-      // Datos de ejemplo para desarrollo
-      estadisticas = {
-        'total_apiarios': 5,
-        'total_colmenas': 23,
-        'total_monitoreos': 156,
-        'monitoreos_pendientes': 3,
-      };
-      apiarios = [
-        Apiario(id: 1, nombre: "Apiario Norte", ubicacion: "Sector La Montaña"),
-        Apiario(id: 2, nombre: "Apiario Sur", ubicacion: "Valle del Río"),
-        Apiario(id: 3, nombre: "Apiario Central", ubicacion: "Finca El Roble"),
-      ];
-      if (mounted) setState(() {});
+      // En caso de error, mostramos 0 para evitar datos falsos
+      if (mounted) {
+        setState(() {
+          estadisticas = {
+            'total_apiarios': 0,
+            'total_colmenas': 0,
+            'total_monitoreos': 0,
+            'monitoreos_pendientes': 0,
+          };
+          apiarios = [];
+        });
+      }
     }
   }
 
