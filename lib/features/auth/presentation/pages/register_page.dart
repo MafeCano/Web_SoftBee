@@ -563,86 +563,79 @@ class _RegisterPageState extends State<RegisterPage> {
 
   // CORRECCIÓN PRINCIPAL: Layout móvil mejorado con scroll
   Widget _buildPortraitLayout(
-    BuildContext context,
-    double width,
-    double height,
-    bool isSmallScreen,
-  ) {
-    final logoSize = width * (isSmallScreen ? 0.25 : 0.10);
-    final titleSize = width * (isSmallScreen ? 0.05 : 0.02);
-    final subtitleSize = width * (isSmallScreen ? 0.04 : 0.03);
-    final verticalSpacing = height * 0.02;
+  BuildContext context,
+  double width,
+  double height,
+  bool isSmallScreen,
+) {
+  final logoSize = width * (isSmallScreen ? 0.25 : 0.10);
+  final titleSize = width * (isSmallScreen ? 0.05 : 0.02);
+  final subtitleSize = width * (isSmallScreen ? 0.04 : 0.03);
+  final verticalSpacing = height * 0.02;
 
-    return Column(
+  return SingleChildScrollView(
+    padding: EdgeInsets.only(
+      top: height * 0.05,
+      bottom: 80, // espacio adicional para evitar el overflow
+      left: width * 0.05,
+      right: width * 0.05,
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // Header fijo
-        Container(
-          height: height * 0.2, // Reducido para dar más espacio al contenido
-          padding: EdgeInsets.all(width * 0.05),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TweenAnimationBuilder(
-                  tween: Tween<double>(begin: 0, end: 1),
-                  duration: const Duration(seconds: 1),
-                  builder: (context, value, child) {
-                    return Transform.scale(scale: value, child: child);
-                  },
-                  child: Container(
-                    height: logoSize,
-                    width: logoSize,
-                    decoration: BoxDecoration(
-                      color: primaryYellow,
-                      borderRadius: BorderRadius.circular(logoSize * 0.3),
-                      boxShadow: [
-                        BoxShadow(
-                          color: darkYellow.withOpacity(0.3),
-                          blurRadius: 15,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                    child: Icon(
-                      Icons.hive,
-                      size: logoSize * 0.4,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-                SizedBox(height: verticalSpacing * 0.5),
-                Text(
-                  'Registro SoftBee',
-                  style: GoogleFonts.poppins(
-                    fontSize: titleSize,
-                    fontWeight: FontWeight.bold,
-                    color: textDark,
-                    letterSpacing: 1.2,
-                  ),
+        // LOGO
+        TweenAnimationBuilder(
+          tween: Tween<double>(begin: 0, end: 1),
+          duration: const Duration(seconds: 1),
+          builder: (context, value, child) {
+            return Transform.scale(scale: value, child: child);
+          },
+          child: Container(
+            height: logoSize,
+            width: logoSize,
+            decoration: BoxDecoration(
+              color: primaryYellow,
+              borderRadius: BorderRadius.circular(logoSize * 0.3),
+              boxShadow: [
+                BoxShadow(
+                  color: darkYellow.withOpacity(0.3),
+                  blurRadius: 15,
+                  offset: const Offset(0, 8),
                 ),
               ],
             ),
-          ),
-        ),
-        // Contenido scrolleable
-        Expanded(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(horizontal: width * 0.05),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  _buildRegistrationStepper(width, height, subtitleSize),
-                  SizedBox(height: verticalSpacing),
-                  _buildFooter(width, subtitleSize),
-                ],
-              ),
+            child: Icon(
+              Icons.hive,
+              size: logoSize * 0.4,
+              color: Colors.white,
             ),
           ),
         ),
+        SizedBox(height: verticalSpacing * 0.5),
+        Text(
+          'Registro SoftBee',
+          style: GoogleFonts.poppins(
+            fontSize: titleSize,
+            fontWeight: FontWeight.bold,
+            color: textDark,
+            letterSpacing: 1.2,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              _buildRegistrationStepper(width, height, subtitleSize),
+              const SizedBox(height: 24),
+              _buildFooter(width, subtitleSize),
+            ],
+          ),
+        ),
       ],
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildLandscapeLayout(
     BuildContext context,
